@@ -4,25 +4,58 @@ int counter = 0;
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
-  Serial.println("LoRa Sender");
+//  Serial.println("LoRa Sender");
   if (!LoRa.begin(433E6)) 
   {
     Serial.println("Starting LoRa failed!");
     while(1);
   }
 }
-
+int runtime_count = 0;
 void loop() {
-  // put your main code here, to run repeatedly:
-  counter++;
-  String msg = String(counter);
+  Serial.print("Listening");
+  while (runtime_count < 5) {
+    int packetSize = LoRa.parsePacket();
+    if (packetSize) {
+      counter = rx() + 1;
+      break;
+    }
+    runtime_count+=1;
+    Serial.print(".");
+    delay(1000);
+  }
+  runtime_count = 0;
+  Serial.println("");
+  while (runtime_count < 5) {
+    counter = tx();
+    runtime_count+=1;
+    delay(1000);
+  }
+  runtime_count = 0;
+}
 
-  Serial.print("Sending message ");
-  Serial.println(msg);
+int tx() {
+  String msg = String(counter);
+  
+  Serial.print("Sending message: \"");
+  Serial.println(msg + "\"");
   
   LoRa.beginPacket();
   LoRa.print(msg);
   LoRa.endPacket();
-  
-  delay(1000);
+
+  return counter;
+}
+
+int rx() {
+  Serial.print("Received packet '");
+  String str = "";
+  while (LoRa.available()) {
+    Serial.print((char)LoRa.read());
+    str=str+((char)LoRa.read()); 
+  }
+  Serial.print("' with RSSI ");
+  Serial.println(LoRa.packetRssi());
+
+  return str.toInt();
 }
