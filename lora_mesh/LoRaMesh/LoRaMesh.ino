@@ -118,8 +118,7 @@ void setup() {
   Serial.setTimeout(1);
   while (!Serial) ; // Wait for serial port to be available
 
-  
-  setBasicData(&nodeid, &groupid, &memberNum);
+  // setBasicData(&nodeid, &groupid, &memberNum);
   nodeId = EEPROM.read(0);
   groupId = EEPROM.read(1);
   memberNum = EEPROM.read(2);
@@ -142,8 +141,13 @@ void setup() {
   }
   Serial.print(F("initializing node "));
   Serial.println(String(nodeId));
-
+  Serial.print(F("group id: "));
+  Serial.println(String(groupId));
+  Serial.print(F("member count: "));
+  Serial.println(String(memberNum));
+  
   manager = new RHMesh(rf95, nodeId);
+  Serial.println(F("here"));
 
   if (!manager->init()) {
     Serial.println(F("init failed"));
@@ -255,6 +259,16 @@ void printNodeInfo(uint8_t node, char *s) {
 
 void loop() {
   rounds++;
+
+//  String str = "";
+//  Serial.println(F("Here"));
+//  while (!Serial.available());
+//  str = Serial.readString();
+//  if (str.indexOf("BasicData-->") >= 0) {
+//    Serial.println(F("StartDataWrite-->"));
+//    setBasicData(&nodeid, &groupid, &memberNum);
+//  }
+  
   Serial.println("======= " + String(rounds) + " =======");
 
   rx_done = 0;

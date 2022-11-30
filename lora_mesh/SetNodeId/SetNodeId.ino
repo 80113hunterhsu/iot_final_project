@@ -2,7 +2,9 @@
 #include <EEPROM.h>
 
 // change this to be the ID of your node in the mesh network
-uint8_t nodeId = 4;
+int nodeId = 4;
+int groupId = 2;
+int memberNum = 3;
 
 void setup() {
   Serial.begin(115200);
@@ -11,18 +13,40 @@ void setup() {
   Serial.println("setting nodeId...");
 
   EEPROM.write(0, nodeId);
+  EEPROM.write(1, groupId);
+  EEPROM.write(2, memberNum);
   Serial.print(F("set nodeId = "));
   Serial.println(nodeId);
+  Serial.print(F("set groupId = "));
+  Serial.println(groupId);
+  Serial.print(F("set memberNum = "));
+  Serial.println(memberNum);
 
-  uint8_t readVal = EEPROM.read(0);
+  int read_nodeId = EEPROM.read(0);
+  int read_groupId = EEPROM.read(1);
+  int read_memberNum = EEPROM.read(2);
 
   Serial.print(F("read nodeId: "));
-  Serial.println(readVal);
+  Serial.println(read_nodeId);
+  Serial.print(F("read groupId: "));
+  Serial.println(read_groupId);
+  Serial.print(F("read memberNum: "));
+  Serial.println(read_memberNum);
 
-  if (nodeId != readVal) {
-    Serial.println(F("*** FAIL ***"));
+  if (nodeId != read_nodeId) {
+    Serial.println(F("*** nodeId FAIL ***"));
   } else {
-    Serial.println(F("SUCCESS"));
+    Serial.println(F("nodeId SUCCESS"));
+  }
+  if (groupId != read_groupId) {
+    Serial.println(F("*** groupId FAIL ***"));
+  } else {
+    Serial.println(F("groupId SUCCESS"));
+  }
+  if (memberNum != read_memberNum) {
+    Serial.println(F("*** memberNum FAIL ***"));
+  } else {
+    Serial.println(F("memberNum SUCCESS"));
   }
 }
 
