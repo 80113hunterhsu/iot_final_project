@@ -52,7 +52,7 @@ mqttClient.on('message', function (topic, message) {
   io.sockets.emit('mesh-data', message.toString());
 })
 
-/*
+
 var testdata = [
   {"2": [{"n":1,"r":-44},{"n":255,"r":0},{"n":3,"r":-13}]},
   {"1": [{"n":255,"r":0},{"n":0,"r":0},{"n":2,"r":0}]},
@@ -116,6 +116,6 @@ var source = interval(1000).pipe(map(i => JSON.stringify(testdata[i % testdata.l
       console.log("no socket client");
     }
   });
-*/
+
 
 server.listen(4200);
