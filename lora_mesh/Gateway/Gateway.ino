@@ -17,9 +17,9 @@ Adafruit_SSD1306 display(-1);
 Adafruit_NeoPixel led = Adafruit_NeoPixel(1, LED_PIN, NEO_RGB + NEO_KHZ800);
 #endif
 
-const char* ssid = "CSIE-B1";
+const char* ssid = "Jason";
 //const char* ssid = "Hunter_Home";
-const char* password = "77346657";
+const char* password = "11111111";
 //const char* password = "QWERTYUIOP1234567890";
 const char* mqtt_server = "test.mosquitto.org";
 int mqtt_port = 8883;

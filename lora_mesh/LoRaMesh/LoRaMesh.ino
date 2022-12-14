@@ -297,7 +297,7 @@ void loop() {
   }
 
   for (uint8_t i = 0; i < memberNum; i++) {
-    int8_t n = (nodeId + i) % 4 + 1;
+    int8_t n = (nodeId + i) % memberNum + 1;
     // int n = i + 1;
     if (n == nodeId) {
       continue; // self
@@ -324,25 +324,35 @@ void loop() {
 
       // LEDblink(error);
     } else {
-      Serial.println(F(" OK"));
-      rx_done++;
+      unsigned long nextTransmit = millis() + random(3000, 5000);
+      // unsigned long nextTransmit = millis() + 2000;
+      while (nextTransmit > millis()) {
+        int waitTime = nextTransmit - millis();
+        uint8_t len = sizeof(buf);
+        uint8_t from;
+        uint8_t gid;
+        if (manager->recvfromAckTimeout((uint8_t *)buf, &len, waitTime, &from, NULL, NULL, &gid)) {
+          if (gid == groupId) {
+            Serial.println(F(" OK"));
+            rx_done++;
+            offline[n - 1] = 0;
 
-      offline[n - 1] = 0;
-
-      // LEDblink(0);
-
-      // we received an acknowledgement from the next hop for the node we tried to send to.
-      RHRouter::RoutingTableEntry *route = manager->getRouteTo(n);
-      if (route->next_hop != 0) {
-        if (groups[route->next_hop - 1] == groupId) {
-          rssi[route->next_hop - 1] = rf95.lastRssi();
+            // we received an acknowledgement from the next hop for the node we tried to send to.
+            RHRouter::RoutingTableEntry *route = manager->getRouteTo(n);
+            if (route->next_hop != 0) {
+              if (groups[route->next_hop - 1] == groupId) {
+                rssi[route->next_hop - 1] = rf95.lastRssi();
+              }
+              Serial.print(F("<< "));
+              Serial.print(rf95.lastRssi());
+              Serial.print(F(", "));
+              Serial.print(rssitoDistance(rf95.lastRssi()));
+              Serial.println(F("m >>"));
+            }
+          }
         }
-        Serial.print(F("<< "));
-        Serial.print(rf95.lastRssi());
-        Serial.print(F(", "));
-        Serial.print(rssitoDistance(rf95.lastRssi()));
-        Serial.println(F("m >>"));
       }
+      
     }
     if (nodeId == 1) printNodeInfo(nodeId, buf); // debugging
 
@@ -354,13 +364,14 @@ void loop() {
       int waitTime = nextTransmit - millis();
       uint8_t len = sizeof(buf);
       uint8_t from;
-      //uint8_t gid = manager->headerFrom();
-      //Serial.println(gid);
       uint8_t gid;
       if (manager->recvfromAckTimeout((uint8_t *)buf, &len, waitTime, &from, NULL, NULL, &gid)) {
         Serial.print(F("flags: "));
         Serial.println(gid);
         if (gid == groupId) {
+          manager -> setTimeout(5000);
+          uint8_t error = manager->sendtoWait((uint8_t *)buf, strlen(buf), n, groupId);
+          
           buf[len] = '\0'; // null terminate string
           Serial.print(from);
           Serial.print(F("->"));
