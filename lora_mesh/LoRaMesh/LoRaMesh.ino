@@ -1,17 +1,19 @@
 #include <EEPROM.h>
-#include <math.h>
+//#include <math.h>
 #include <RHRouter.h>
 #include <RHMesh.h>
 #include <RH_RF95.h>
 #define RH_HAVE_SERIAL
 #define LED 8
-#define N_NODES 30
+#define BTN 7
+#define N_NODES 6
 //#define N_NODES 2 //test
 
 int rounds = 0;
 int rx_done = 0;
 
 int data_set_status = 0;
+int start_data_setting = 0;
 int nodeid = -1; //unique number
 int groupid = -1;  //group name set by group organizer
 int memberNum = -1;  //count of group members
@@ -112,6 +114,7 @@ void printFreeMem() {
 
 void setup() {
   randomSeed(analogRead(0));
+  pinMode(BTN, INPUT_PULLUP);
   pinMode(LED, OUTPUT);
   LEDblink(0);
   Serial.begin(115200);
@@ -119,6 +122,27 @@ void setup() {
   while (!Serial) ; // Wait for serial port to be available
 
   
+  unsigned long waitforbtn = millis() + 3000;
+  while (waitforbtn > millis()) {
+    Serial.print(F("Waiting..."));
+    Serial.println(String((waitforbtn - millis()) / 1000));
+    int stat = 0;
+    stat = !digitalRead(BTN);
+    Serial.println(String(stat));
+    if (stat) {
+      digitalWrite(LED, HIGH);
+      delay(5000);
+      digitalWrite(LED, LOW);
+      start_data_setting = 1;
+    }
+    delay(500);
+  }
+
+  if (start_data_setting) {
+    Serial.println(F("StartDataWrite-->"));
+    setBasicData(&nodeid, &groupid, &memberNum);
+  }
+
   setBasicData(&nodeid, &groupid, &memberNum);
   nodeId = EEPROM.read(0);
   groupId = EEPROM.read(1);
@@ -201,7 +225,7 @@ const __FlashStringHelper* getErrorString(uint8_t error) {
   return F("unknown");
 }
 
-double rssitoDistance(double rssi, int a = 47, double n = 1.85) {
+double rssitoDistance(double rssi, int a = 67, double n = 1.192913874) {
   double ra = abs(rssi);
   double ka = (ra - a) / (10 * n);
   double distance = pow(10, ka);
@@ -255,6 +279,7 @@ void printNodeInfo(uint8_t node, char *s) {
 
 void loop() {
   rounds++;
+  
   Serial.println("======= " + String(rounds) + " =======");
 
   rx_done = 0;
